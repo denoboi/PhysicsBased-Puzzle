@@ -10,13 +10,17 @@ public class GameManager : MonoBehaviour
     private int _score;
     private int _lives = 3;
 
-    public TextMeshPro ScoreText, LivesText;
+    public TextMeshProUGUI ScoreText, LivesText;
     
     public static GameManager Instance;
-
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
+        UpdateTextElements();
     }
 
     public void GameOver()
@@ -26,11 +30,15 @@ public class GameManager : MonoBehaviour
         {
             print("GameOver");
         }
+        
+        UpdateTextElements();
     }
 
     public void AddScore()
     {
         _score++;
+        
+        UpdateTextElements();
     }
 
     public void UpdateTextElements()
