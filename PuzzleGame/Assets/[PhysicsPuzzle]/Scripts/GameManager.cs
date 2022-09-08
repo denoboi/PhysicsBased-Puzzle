@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -15,10 +17,21 @@ public class GameManager : MonoBehaviour
     private Rigidbody2D _ballRb;
     private Vector2 _ballStartPos;
     private float _ballDistanceToCam;
-    private float _lastYPos; //Moving ball stuff
+   
 
     public TextMeshProUGUI ScoreText, LivesText;
     
+    //Spawn Traps
+   
+    private float _traveledDistance;
+    private float _lastYPos; //Moving ball stuff
+    
+    public List<GameObject> TrapPrefabs = new List<GameObject>();
+    public Transform SpawnPoint;
+
+    private List<GameObject> _spawnedTraps = new List<GameObject>();
+
+
     public static GameManager Instance;
     private void Awake()
     {
@@ -38,7 +51,7 @@ public class GameManager : MonoBehaviour
     {
         //resetting ball position
         _ballStartPos.y = Camera.main.transform.position.y + _ballStartPos.y; //kamera hep asagi hareket edecegi icin gerek olacak.
-        Ball.transform.position = _ballStartPos; //y pozisyonunu overwrite ettik 
+        Ball.transform.position = _ballStartPos; //y pozisyonunu overwrite ettik, yani basa aldik tekrar topu.
         _ballRb.velocity = Vector2.zero; //In order to prevent fall speed when the game starts.
         
         _lives--;
@@ -68,6 +81,7 @@ public class GameManager : MonoBehaviour
     private void LateUpdate() //update'den daha gec ve daha az cagriliyor.
     {
         MoveCamWithTheBall();
+        SpawnNewTraps();
     }
 
     void MoveCamWithTheBall()
@@ -79,5 +93,29 @@ public class GameManager : MonoBehaviour
 
             Camera.main.transform.position = Vector3.Lerp(oldCamPos, newCamPos, 2 * Time.deltaTime);
         }
+    }
+
+    void SpawnNewTraps()
+    {
+        float _distanceToNewSpawn = Random.Range(4f, 7f); //globalde tanimlanmiyor random.range
+        
+        _traveledDistance = _lastYPos - Ball.transform.position.y; //baslangicta lastY position start'taki topun pozisyonu.
+
+        if (_traveledDistance >= _distanceToNewSpawn)
+        {
+            _lastYPos = Ball.transform.position.y; //simdi lasty pozisyonu degistiriyoruz.
+            _traveledDistance = 0;
+            InstantiateNewTraps();
+
+            Debug.Log("New trap created");
+        }
+        
+    }
+
+    void InstantiateNewTraps()
+    {
+        int index = Random.Range(0, TrapPrefabs.Count);
+        GameObject newTrap = Instantiate(TrapPrefabs[index], SpawnPoint.position, Quaternion.identity);
+        _spawnedTraps.Add(newTrap);
     }
 }
